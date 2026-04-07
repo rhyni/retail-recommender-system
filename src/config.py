@@ -1,4 +1,3 @@
-# config file
 from datetime import datetime, timezone
 
 DATASET_DIR   = "/kaggle/input/datasets/psparks/instacart-market-basket-analysis"
