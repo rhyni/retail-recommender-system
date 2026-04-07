@@ -1,24 +1,38 @@
-from supabase import create_client
+# src/supabase_utils.py
+import time
+from supabase import create_client, Client
 
+# Singleton pattern
+_supabase_client = None
 
-def get_supabase_client():
+def get_supabase_client(url: str, key: str) -> Client:
+    """Khởi tạo và trả về client Supabase duy nhất"""
+    global _supabase_client
+    if _supabase_client is None:
+        if not url or not key:
+            raise ValueError("Thiếu URL hoặc Key của Supabase.")
+        _supabase_client = create_client(url, key)
+    return _supabase_client
+
+def upload_to_storage(client: Client, bucket: str, storage_path: str, payload: bytes, max_retries: int = 3):
     """
-    Tạo Supabase client từ Kaggle Secrets.
-    Nếu không chạy trên Kaggle thì fallback sang environment variables.
+    Upload file bytes lên Supabase Storage với cơ chế Retry.
     """
-    try:
-        from kaggle_secrets import UserSecretsClient
-
-        secrets = UserSecretsClient()
-        supabase_url = secrets.get_secret("SUPABASE_URL")
-        supabase_key = secrets.get_secret("SUPABASE_KEY")
-    except Exception:
-        import os
-
-        supabase_url = os.environ.get("SUPABASE_URL")
-        supabase_key = os.environ.get("SUPABASE_KEY")
-
-    if not supabase_url or not supabase_key:
-        raise ValueError("Thiếu SUPABASE_URL hoặc SUPABASE_KEY")
-
-    return create_client(supabase_url, supabase_key)
+    for attempt in range(1, max_retries + 1):
+        try:
+            client.storage.from_(bucket).upload(
+                storage_path, payload,
+                file_options={"content-type": "application/octet-stream", "upsert": "false"},
+            )
+            return True
+        except Exception as e:
+            msg = str(e).lower()
+            if any(k in msg for k in ("duplicate", "already exists", "409")):
+                print(f"  [BỎ QUA] Đã tồn tại: {storage_path}")
+                return True
+            
+            print(f"  [WARN] Upload thất bại lần {attempt}/{max_retries}: {e}")
+            if attempt < max_retries:
+                time.sleep(attempt * 2)
+            else:
+                raise RuntimeError(f"Upload thất bại sau {max_retries} lần: {storage_path}") from e
