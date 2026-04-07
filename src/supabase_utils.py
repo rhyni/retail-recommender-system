@@ -1,22 +1,24 @@
 from supabase import create_client
 
+
 def get_supabase_client():
     """
     Tạo Supabase client từ Kaggle Secrets.
-    Import hàm này ở mọi notebook thay vì viết lại.
+    Nếu không chạy trên Kaggle thì fallback sang environment variables.
     """
     try:
         from kaggle_secrets import UserSecretsClient
-        secrets      = UserSecretsClient()
-        SUPABASE_URL = secrets.get_secret("SUPABASE_URL")
-        SUPABASE_KEY = secrets.get_secret("SUPABASE_KEY")
-    except Exception:
-        # Chạy local (không phải Kaggle) → dùng env variable
-        import os
-        SUPABASE_URL = os.environ.get("SUPABASE_URL")
-        SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
 
-    if not SUPABASE_URL or not SUPABASE_KEY:
+        secrets = UserSecretsClient()
+        supabase_url = secrets.get_secret("SUPABASE_URL")
+        supabase_key = secrets.get_secret("SUPABASE_KEY")
+    except Exception:
+        import os
+
+        supabase_url = os.environ.get("SUPABASE_URL")
+        supabase_key = os.environ.get("SUPABASE_KEY")
+
+    if not supabase_url or not supabase_key:
         raise ValueError("Thiếu SUPABASE_URL hoặc SUPABASE_KEY")
 
-    return create_client(SUPABASE_URL, SUPABASE_KEY)
+    return create_client(supabase_url, supabase_key)
