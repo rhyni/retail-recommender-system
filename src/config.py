@@ -1,27 +1,23 @@
-# src/config.py
+from datetime import datetime, timezone
 
-# 1. Cấu hình Storage
+DATASET_DIR   = "/kaggle/input/datasets/psparks/instacart-market-basket-analysis"
 BRONZE_BUCKET = "bronze-data"
+SILVER_BUCKET = "silver-data"
 BRONZE_BASE   = "instacart/bronze"
+SILVER_BASE   = "instacart/silver"
+RUN_ID        = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+BRONZE_PREFIX = f"{BRONZE_BASE}/{RUN_ID}"
 
-# 2. Cấu hình Data Pipeline (Dtypes & Chunksize)
-# Ép kiểu cứng giúp giảm 30-50% RAM khi Pandas đọc CSV
 FILE_CONFIG = [
     {
         "name"      : "aisles",
         "chunksize" : None,
-        "dtypes"    : {
-            "aisle_id" : "int16",
-            "aisle"    : "str",
-        },
+        "dtypes"    : {"aisle_id": "int16", "aisle": "str"},
     },
     {
         "name"      : "departments",
         "chunksize" : None,
-        "dtypes"    : {
-            "department_id" : "int8",
-            "department"    : "str",
-        },
+        "dtypes"    : {"department_id": "int8", "department": "str"},
     },
     {
         "name"      : "products",
@@ -50,25 +46,24 @@ FILE_CONFIG = [
         "name"      : "order_products__train",
         "chunksize" : 500_000,
         "dtypes"    : {
-            "order_id"         : "int32",
-            "product_id"       : "int32",
-            "add_to_cart_order": "int16",
-            "reordered"        : "int8",
+            "order_id"          : "int32",
+            "product_id"        : "int32",
+            "add_to_cart_order" : "int16",
+            "reordered"         : "int8",
         },
     },
     {
         "name"      : "order_products__prior",
         "chunksize" : 1_000_000,
         "dtypes"    : {
-            "order_id"         : "int32",
-            "product_id"       : "int32",
-            "add_to_cart_order": "int16",
-            "reordered"        : "int8",
+            "order_id"          : "int32",
+            "product_id"        : "int32",
+            "add_to_cart_order" : "int16",
+            "reordered"         : "int8",
         },
     },
 ]
 
-# 3. Cấu hình Validation Schema
 EXPECTED_COLS = {
     "aisles"               : ["aisle_id", "aisle"],
     "departments"          : ["department_id", "department"],
