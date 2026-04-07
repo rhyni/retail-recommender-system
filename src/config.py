@@ -1,3 +1,9 @@
+import os
+
+SRC_DIR = "/kaggle/working/retail-recommender-system/src"
+os.makedirs(SRC_DIR, exist_ok=True)
+
+config_code = '''
 from datetime import datetime, timezone
 
 DATASET_DIR = "/kaggle/input/datasets/psparks/instacart-market-basket-analysis"
@@ -70,15 +76,9 @@ FILE_CONFIG = [
 ]
 
 EXPECTED_COLS = {
-    "aisles": [
-        "aisle_id", "aisle"
-    ],
-    "departments": [
-        "department_id", "department"
-    ],
-    "products": [
-        "product_id", "product_name", "aisle_id", "department_id"
-    ],
+    "aisles": ["aisle_id", "aisle"],
+    "departments": ["department_id", "department"],
+    "products": ["product_id", "product_name", "aisle_id", "department_id"],
     "orders": [
         "order_id", "user_id", "eval_set", "order_number",
         "order_dow", "order_hour_of_day", "days_since_prior_order"
@@ -99,3 +99,9 @@ EXPECTED_ROWS = {
     "order_products__prior": 32434489,
     "order_products__train": 1384617,
 }
+'''.strip()
+
+with open(os.path.join(SRC_DIR, "config.py"), "w", encoding="utf-8") as f:
+    f.write(config_code)
+
+print("Đã ghi lại config.py")
