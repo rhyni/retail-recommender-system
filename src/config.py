@@ -33,9 +33,12 @@ SILVER_BUCKET = "silver-data"
 GOLD_BUCKET   = "gold-data"
 
 # Prefix path bên trong bucket
-BRONZE_PREFIX = "instacart/bronze"
-SILVER_PREFIX = "instacart/silver"
-GOLD_PREFIX   = "instacart/gold"
+# Prefix path bên trong bucket
+BRONZE_PREFIX          = "instacart/bronze"
+SILVER_PREFIX          = "instacart/silver"          # giữ nguyên — code cũ vẫn dùng
+SILVER_MASTER_PREFIX   = "instacart/silver-master"   # ← thêm dòng này
+SILVER_FEATURES_PREFIX = "instacart/silver-features" # ← thêm dòng này
+GOLD_PREFIX            = "instacart/gold"
 
 # ─────────────────────────────────────────────────────
 # PIPELINE
