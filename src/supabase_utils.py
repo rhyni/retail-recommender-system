@@ -61,18 +61,16 @@ def upload_parquet(df: pd.DataFrame, bucket: str, path: str):
 # ─────────────────────────────────────────────────────
 
 def download_parquet(bucket: str, path: str) -> pd.DataFrame:
-    """
-    Download 1 file .parquet từ Supabase Storage về DataFrame.
-
-    Args:
-        bucket : tên bucket
-        path   : path đầy đủ trong bucket
-    Returns:
-        pd.DataFrame
-    """
-    data = get_client().storage.from_(bucket).download(path)
-    return pd.read_parquet(io.BytesIO(data))
-
+    try:
+        data = get_client().storage.from_(bucket).download(path)
+        return pd.read_parquet(io.BytesIO(data))
+    except Exception as e:
+        raise FileNotFoundError(
+            f"❌ Không tải được file từ Supabase\n"
+            f"   bucket : {bucket}\n"
+            f"   path   : {path}\n"
+            f"   error  : {e}"
+        ) from e
 
 # ─────────────────────────────────────────────────────
 # LIST FILES
@@ -81,14 +79,14 @@ def download_parquet(bucket: str, path: str) -> pd.DataFrame:
 def list_files(bucket: str, prefix: str) -> list[str]:
     """
     Liệt kê các file .parquet trong 1 folder trên Supabase.
-
-    Args:
-        bucket : tên bucket
-        prefix : đường dẫn folder (vd: "instacart/bronze/{run_id}/orders")
-    Returns:
-        list tên file .parquet, ví dụ ["part-00001.parquet", "part-00002.parquet"]
+    Thử cả path có và không có trailing slash.
     """
     res = get_client().storage.from_(bucket).list(prefix)
+    
+    # Nếu rỗng, thử lại không có trailing slash (Supabase đôi khi cần)
+    if not res:
+        res = get_client().storage.from_(bucket).list(prefix.rstrip("/"))
+    
     return [f["name"] for f in res if f["name"].endswith(".parquet")]
 
 
